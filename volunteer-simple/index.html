@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Карта помощи</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <img src="logo.svg" alt="Логотип" class="logo" />
+        <div>
+          <h1 class="title">Карта помощи Казахстану</h1>
+          <div class="subtitle">Найди фонд рядом и помоги прямо сейчас</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="about.html" class="nav-btn">О нас</a>
+        <a href="contacts.html" class="nav-btn">Контакты</a>
+        <a href="index.html" class="kaspi-btn">Пожертвовать</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero container">
+    <div class="hero-left">
+      <h2>Помоги тем, кто рядом</h2>
+      <p>На карте — реальные организации и люди, которым нужна помощь. Нажми на маркер и переведи прямо на их счёт в Kaspi или PayPal.</p>
+      <div class="hero-cta">
+        <a href="#map" class="cta primary">Найти организации на карте</a>
+        <a href="#add" class="cta outline">Добавить организацию</a>
+      </div>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Поиск по названию или городу" />
+        <select id="filter">
+          <option value="all">Все категории</option>
+          <option value="food">Продукты</option>
+          <option value="medical">Медицина</option>
+          <option value="animals">Животные</option>
+        </select>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div id="map"></div>
+    </div>
+  </section>
+
+  <!-- about and contacts moved to separate pages -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
