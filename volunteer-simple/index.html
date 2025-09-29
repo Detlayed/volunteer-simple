@@ -1,40 +1,70 @@
-<!doctype html>
-<!--
-  Original site preserved in repository history. This minimal page embeds 2GIS fullscreen.
-  If 2GIS embedding is blocked, use the button to open the map in a new tab.
--->
+<!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Карта 2GIS — Полноэкранная</title>
-    <style>
-      html,body{height:100%;margin:0}
-      .gis-full{position:fixed;inset:0;border:0}
-      .fallback{position:fixed;left:12px;top:12px;z-index:9999}
-      .fallback a{display:inline-block;padding:8px 12px;background:#fff;border-radius:8px;text-decoration:none;color:#111;border:1px solid #ddd}
-    </style>
-  </head>
-  <body>
-    <div class="fallback"><a id="open-2gis" href="https://2gis.kz/" target="_blank" rel="noopener">Открыть 2GIS в новой вкладке</a></div>
-    <iframe id="2gis-iframe" class="gis-full" src="https://2gis.kz/" frameborder="0" allowfullscreen loading="lazy"></iframe>
-    <script>
-      // Если хотите загрузить конкретное место, замените src iframe на ссылку вида
-      // https://2gis.kz/astana/geo/70000001057353128
-      (function(){
-        const open = document.getElementById('open-2gis');
-        const iframe = document.getElementById('2gis-iframe');
-        open.addEventListener('click', ()=>{});
-        // Попробуем установить href на первую запись в places.json, если файл существует
-        fetch('places.json').then(r=>r.ok?r.json():null).then(data=>{
-          if(!data||!Array.isArray(data)||data.length===0) return;
-          const first = data[0];
-          if(first && first.website){
-            iframe.src = first.website;
-            open.href = first.website;
-          }
-        }).catch(()=>{});
-      })();
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>Карта помощи</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <img src="logo.svg" alt="Логотип" class="logo" />
+        <div>
+          <h1 class="title">Карта помощи Казахстану</h1>
+          <div class="subtitle">Найди фонд рядом и помоги прямо сейчас</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="about.html" class="nav-btn">О нас</a>
+        <a href="contacts.html" class="nav-btn">Контакты</a>
+        <a href="index.html" class="kaspi-btn">Пожертвовать</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero container">
+    <div class="hero-left">
+      <h2>Помоги тем, кто рядом</h2>
+      <p>На карте — реальные организации и люди, которым нужна помощь. Нажми на маркер и переведи прямо на их счёт в Kaspi или PayPal.</p>
+      <div class="hero-cta">
+        <a href="#map" class="cta primary">Найти организации на карте</a>
+        <a href="#add" class="cta outline">Добавить организацию</a>
+      </div>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Поиск по названию или городу" />
+        <select id="filter">
+          <option value="all">Все категории</option>
+          <option value="shelter_humans">Приюты (люди)</option>
+          <option value="elderly_home">Дома престарелых</option>
+          <option value="animal_shelter">Приюты для животных</option>
+          <option value="child_fund">Фонды помощи детям</option>
+          <option value="food_kitchen">Столовые помощи</option>
+          <option value="rehab_center">Реабилитация</option>
+          <option value="social_center">Социальные центры</option>
+          <option value="medical_fund">Медицинская помощь</option>
+          <option value="disability_center">Поддержка инвалидов</option>
+          <option value="family_support">Помощь семьям</option>
+          <option value="homeless_shelter">Ночные приюты</option>
+          <option value="volunteer_coalition">Коалиции волонтёров</option>
+        </select>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div id="map"></div>
+      <div id="gis-panel" class="gis-panel hidden">
+        <div class="gis-header">
+          <button id="gis-close" class="nav-btn">Закрыть 2GIS</button>
+          <a id="gis-open-native" class="nav-btn" href="#" target="_blank">Открыть в 2GIS</a>
+        </div>
+        <iframe id="gis-iframe" src="" frameborder="0" loading="lazy"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- about and contacts moved to separate pages -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
 </html>
