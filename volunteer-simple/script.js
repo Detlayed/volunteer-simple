@@ -64,13 +64,21 @@ function renderPlaces() {
   visible.forEach(place => {
     const marker = L.marker(place.coords).addTo(map);
     markers.push(marker);
-    const donateLink = place.donate ? `<a href="${place.donate}" target="_blank" class="kaspi-btn">Пожертвовать</a>` : '';
-    const gisBtn = place.website ? `<button class="kaspi-btn" data-gis="${place.website}" onclick="openIn2GIS(event)">Открыть в 2GIS</button>` : '';
+    // Build donation UI: prefer direct donate link, then kaspi_phone, then website
+    let donateHtml = '';
+    if (place.donate) {
+      donateHtml = `<a href="${place.donate}" target="_blank" class="kaspi-btn">Пожертвовать (Kaspi)</a>`;
+    } else if (place.kaspi_phone) {
+      donateHtml = `<div>Пожертвования по Kaspi: <strong>${place.kaspi_phone}</strong> <button class="kaspi-btn" data-phone="${place.kaspi_phone}" onclick="copyKaspi(event)">Копировать</button></div>`;
+    } else if (place.website) {
+      donateHtml = `<a href="${place.website}" target="_blank" class="kaspi-btn">Сайт организации</a> <div style="font-size:0.9rem;color:#666;margin-top:6px;">Реквизиты для Kaspi не найдены — проверьте сайт или обновите запись.</div>`;
+    } else {
+      donateHtml = `<div style="font-size:0.95rem;color:#666;">Реквизиты для пожертвований не указаны. Свяжитесь с организацией для получения реквизитов.</div>`;
+    }
     marker.bindPopup(`
       <h3>${place.name}</h3>
       <p>${place.description}</p>
-      ${donateLink}
-      ${gisBtn}
+      ${donateHtml}
     `);
   });
 
@@ -148,3 +156,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (panel) panel.classList.add('hidden');
   });
 });
+
+function copyKaspi(evt) {
+  const btn = evt.currentTarget || evt.target;
+  const phone = btn.getAttribute('data-phone');
+  if (!phone) return;
+  navigator.clipboard && navigator.clipboard.writeText(phone).then(()=>{
+    btn.textContent = 'Скопировано';
+    setTimeout(()=> btn.textContent = 'Копировать', 1500);
+  }).catch(()=> alert('Не удалось скопировать.'));
+}

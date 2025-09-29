@@ -7,23 +7,7 @@ body {
 }
 h1 {
   background: linear-gradient(90deg, #4f46e5 60%, #6366f1 100%);
-.gis-panel {
-  position: fixed;
-  right: 24px;
-  top: 120px;
-  width: 420px;
-  height: 60vh;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 12px 40px rgba(2,6,23,0.12);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  z-index: 1200;
-}
-.gis-panel.hidden { display: none; }
-.gis-header { display:flex; gap:8px; padding:8px; background:#f8fafc; align-items:center; }
-#gis-iframe { flex: 1 1 auto; width: 100%; border: 0; }
+/* 2GIS panel removed per user request */
   color: #fff;
   padding: 18px 0 14px 0;
   margin: 0 0 10px 0;
