@@ -1,11 +1,5 @@
-// Создание карты
-const map = L.map('map').setView([48.0, 67.0], 5);
-
-// Подключение тайлов
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap'
-}).addTo(map);
-
+// Этот файл больше не инициализирует карту автоматически.
+// Он экспортирует функцию initVolunteerMap(containerId) для использования на странице волонтёра.
 // Данные организаций вынесены в файл places.json (если есть).
 // Удалены вымышленные записи. Добавляйте реальные организации в файл `places.json` в папке сайта.
 // Пример структуры (оставлен как шаблон):
@@ -21,21 +15,23 @@ const places = [
 */
 
 let places = [];
+let volunteerMap = null;
+let volunteerMarkers = [];
 
 // Попытка подгрузить places.json — если файл есть, используем его
 fetch('places.json')
   .then(r => r.ok ? r.json() : [])
-  .then(data => { places = Array.isArray(data) ? data : []; renderPlaces(); })
-  .catch(() => { places = []; renderPlaces(); });
+  .then(data => { places = Array.isArray(data) ? data : []; })
+  .catch(() => { places = []; });
 
 // Маркеры и фильтрация
 let markers = [];
 let currentFilter = 'all';
 let currentSearch = '';
 
-function clearMarkers() {
-  markers.forEach(m => map.removeLayer(m));
-  markers = [];
+function clearMarkersOn(mapInstance, markerList) {
+  markerList.forEach(m => mapInstance.removeLayer(m));
+  markerList.length = 0;
 }
 
 function matchesFilter(place) {
@@ -51,59 +47,69 @@ function matchesSearch(place) {
 }
 
 // Добавление маркеров с учётом фильтра и поиска
-function renderPlaces() {
-  clearMarkers();
-
+function renderPlacesOn(mapInstance, markerList) {
+  clearMarkersOn(mapInstance, markerList);
   if (!places || places.length === 0) {
-    map.setView([51.1694, 71.4491], 6);
+    mapInstance.setView([51.1694, 71.4491], 6);
     return;
   }
-
   const visible = places.filter(p => matchesFilter(p) && matchesSearch(p));
-
   visible.forEach(place => {
-    const marker = L.marker(place.coords).addTo(map);
-    markers.push(marker);
-    // Build donation UI: prefer direct donate link, then kaspi_phone, then website
-    let donateHtml = '';
-    if (place.donate) {
-      donateHtml = `<a href="${place.donate}" target="_blank" class="kaspi-btn">Пожертвовать (Kaspi)</a>`;
-    } else if (place.kaspi_phone) {
-      donateHtml = `<div>Пожертвования по Kaspi: <strong>${place.kaspi_phone}</strong> <button class="kaspi-btn" data-phone="${place.kaspi_phone}" onclick="copyKaspi(event)">Копировать</button></div>`;
-    } else if (place.website) {
-      donateHtml = `<a href="${place.website}" target="_blank" class="kaspi-btn">Сайт организации</a> <div style="font-size:0.9rem;color:#666;margin-top:6px;">Реквизиты для Kaspi не найдены — проверьте сайт или обновите запись.</div>`;
-    } else {
-      donateHtml = `<div style="font-size:0.95rem;color:#666;">Реквизиты для пожертвований не указаны. Свяжитесь с организацией для получения реквизитов.</div>`;
-    }
-    marker.bindPopup(`
-      <h3>${place.name}</h3>
-      <p>${place.description}</p>
-      ${donateHtml}
-    `);
+    const marker = L.marker(place.coords).addTo(mapInstance);
+    marker.bindPopup(buildPopupHtml(place));
+    markerList.push(marker);
   });
-
-  if (visible.length > 0) {
-    const group = L.featureGroup(markers);
-    map.fitBounds(group.getBounds().pad(0.2));
+  if (markerList.length > 0) {
+    const group = L.featureGroup(markerList);
+    mapInstance.fitBounds(group.getBounds().pad(0.2));
   } else {
-    map.setView([51.1694, 71.4491], 11);
+    mapInstance.setView([51.1694, 71.4491], 11);
   }
 }
 
+function buildPopupHtml(place){
+  let donateHtml = '';
+  if (place.donate) {
+    donateHtml = `<a href="${place.donate}" target="_blank" class="kaspi-btn">Пожертвовать (Kaspi)</a>`;
+  } else if (place.kaspi_phone) {
+    donateHtml = `<div>Пожертвования по Kaspi: <strong>${place.kaspi_phone}</strong> <button class="kaspi-btn" data-phone="${place.kaspi_phone}" onclick="copyKaspi(event)">Копировать</button></div>`;
+  } else if (place.website) {
+    donateHtml = `<a href="${place.website}" target="_blank" class="kaspi-btn">Сайт организации</a> <div style="font-size:0.9rem;color:#666;margin-top:6px;">Реквизиты для Kaspi не найдены — проверьте сайт или обновите запись.</div>`;
+  } else {
+    donateHtml = `<div style="font-size:0.95rem;color:#666;">Реквизиты для пожертвований не указаны. Свяжитесь с организацией для получения реквизитов.</div>`;
+  }
+  return `<h3>${place.name}</h3><p>${place.description}</p>${donateHtml}`;
+}
+
 // Подключаем контролы поиска/фильтра
+// Expose init function for volunteer page
+function initVolunteerMap(containerId){
+  if(window.L===undefined) throw new Error('Leaflet not loaded');
+  const mapEl = document.getElementById(containerId);
+  if(!mapEl) throw new Error('Container not found: '+containerId);
+  volunteerMap = L.map(mapEl).setView([51.1694,71.4491], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(volunteerMap);
+  renderPlacesOn(volunteerMap, volunteerMarkers);
+  return volunteerMap;
+}
+
+// Allow updating marker view from external code
+function refreshVolunteerMarkers(){ if(volunteerMap) renderPlacesOn(volunteerMap, volunteerMarkers); }
+
+// Hook up search/filter if present on the page
 document.addEventListener('DOMContentLoaded', () => {
   const search = document.getElementById('search');
   const filter = document.getElementById('filter');
   if (search) {
     search.addEventListener('input', (e) => {
       currentSearch = e.target.value.trim();
-      renderPlaces();
+      if(volunteerMap) renderPlacesOn(volunteerMap, volunteerMarkers);
     });
   }
   if (filter) {
     filter.addEventListener('change', (e) => {
       currentFilter = e.target.value;
-      renderPlaces();
+      if(volunteerMap) renderPlacesOn(volunteerMap, volunteerMarkers);
     });
   }
 });
@@ -166,3 +172,11 @@ function copyKaspi(evt) {
     setTimeout(()=> btn.textContent = 'Копировать', 1500);
   }).catch(()=> alert('Не удалось скопировать.'));
 }
+
+// Export helpers for other scripts
+window.volunteerMapAPI = {
+  init: initVolunteerMap,
+  refreshMarkers: refreshVolunteerMarkers,
+  getPlaces: ()=>places,
+  getMarkers: ()=>volunteerMarkers
+};

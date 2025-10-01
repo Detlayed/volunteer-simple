@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Волонтёры — Вход</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     .auth-box{max-width:420px;margin:40px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.06)}
     .auth-box input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb}
@@ -35,12 +36,26 @@
       <p>Добро пожаловать, <span id="volunteer-email"></span></p>
       <button id="logout" class="nav-btn">Выйти</button>
       <h3>Действия</h3>
-      <ul>
-        <li><a href="request.html">Посмотреть/обработать заявки</a></li>
-        <li><a href="index.html">Вернуться на карту</a></li>
-      </ul>
+      <div>
+        <button id="refresh-apps" class="kaspi-btn">Обновить список заявок</button>
+        <button id="export-csv" class="nav-btn">Экспорт CSV</button>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Фильтр по статусу: <select id="filter-status"><option value="all">Все</option><option value="new">Новые</option><option value="in_progress">В работе</option><option value="done">Выполнено</option></select></label>
+      </div>
+      <div style="margin-top:12px;">
+        <table id="apps-table" style="width:100%;border-collapse:collapse">
+          <thead><tr><th style="text-align:left">Имя</th><th>Город</th><th>Адрес</th><th>Контакт</th><th>Описание</th><th>Статус</th><th>Действия</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div style="margin-top:18px;">
+        <h3>Карта организаций и заявок</h3>
+        <div id="volunteer-map" style="height:420px;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb"></div>
+      </div>
     </div>
   </main>
   <script src="volunteer.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </body>
 </html>
