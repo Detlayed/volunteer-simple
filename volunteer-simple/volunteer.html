@@ -62,7 +62,17 @@
       </div>
     </div>
   </main>
-  <script src="volunteer.js"></script>
+  <!-- Leaflet and map script (provides volunteerMapAPI) -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+  <!-- Supabase (optional): to enable, set window.SUPABASE_CONFIG in SUPABASE_SETUP.md instructions -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  <script>
+    // Paste your Supabase connection here or create window.SUPABASE_CONFIG in the browser console
+    // Example in console: window.SUPABASE_CONFIG = { url: 'https://xxx.supabase.co', anonKey: 'public-anon-key' };
+    window.SUPABASE_CONFIG = window.SUPABASE_CONFIG || {};
+  </script>
+  <script src="supabase.js"></script>
+  <script src="volunteer.js"></script>
 </body>
 </html>

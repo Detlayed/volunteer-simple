@@ -58,15 +58,30 @@
   const contact=document.getElementById('app-contact').value.trim();
   const desc=document.getElementById('app-desc').value.trim();
   if(!name||!contact||!desc){document.getElementById('app-result').textContent='Заполните имя, контакт и описание.';return}
-  const apps=JSON.parse(localStorage.getItem('volunteer_apps')||'[]');
+  document.getElementById('app-result').textContent = 'Сохраняем...';
   const combined = [name, city, address, contact].filter(Boolean).join(', ');
-  document.getElementById('app-result').textContent = 'Сохраняем... пытаемся определить координаты по адресу (опционально)';
   let coords = null;
   if(address || city){
     coords = await geocodeAddress((address?address+', ':'') + (city||''));
   }
-  apps.push({name,city,address,contact,desc,created:Date.now(),status:'new', coords: coords});
-      localStorage.setItem('volunteer_apps',JSON.stringify(apps));
+  const payload = { name, city, address, contact, desc, created: new Date().toISOString(), status: 'new', coords };
+  // If Supabase helper present, try to insert there first
+  if(window._supabase_helper && window._supabase_helper.createRequest){
+    try{
+      const res = await window._supabase_helper.createRequest(payload);
+      if(res && res.ok){
+        document.getElementById('app-result').textContent = 'Заявка принята и сохранена на сервере.' + (coords? ' Координаты определены.':'' );
+        document.getElementById('app-name').value='';document.getElementById('app-city').value='';document.getElementById('app-address').value='';document.getElementById('app-contact').value='';document.getElementById('app-desc').value='';
+        return;
+      } else {
+        console.warn('Supabase insert failed', res);
+      }
+    }catch(e){ console.warn('supabase createRequest error', e); }
+  }
+  // Fallback: localStorage
+  const apps=JSON.parse(localStorage.getItem('volunteer_apps')||'[]');
+  apps.push(payload);
+  localStorage.setItem('volunteer_apps',JSON.stringify(apps));
   document.getElementById('app-result').textContent='Заявка принята — волонтёры свяжутся с вами.' + (coords? ' Координаты определены.':'');
   document.getElementById('app-name').value='';document.getElementById('app-city').value='';document.getElementById('app-address').value='';document.getElementById('app-contact').value='';document.getElementById('app-desc').value='';
     });

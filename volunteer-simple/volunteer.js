@@ -90,19 +90,47 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const iin = (document.getElementById('iin') && document.getElementById('iin').value.trim()) || '';
     const phone = (document.getElementById('vol-phone') && document.getElementById('vol-phone').value.trim()) || '';
     const city = (document.getElementById('vol-city') && document.getElementById('vol-city').value.trim()) || '';
-    users[e]= { password: p, profile: { fullName, iin, phone, city } };
-    saveUsers(users);
-    localStorage.setItem('volunteer_current', e);
-    showPanel(e);
+    // If Supabase configured, try to sign up there and store profile in volunteers table
+    (async ()=>{
+      if(window._supabase_helper && window._supabase_helper.signupVolunteer){
+        const res = await window._supabase_helper.signupVolunteer(e, p, { fullName, iin, phone, city });
+        if(res && res.ok){
+          // signup ok (email confirmation may be required)
+          localStorage.setItem('volunteer_current', e);
+          showPanel(e);
+          return;
+        } else {
+          console.warn('Supabase signup failed, fallback to localStorage', res);
+        }
+      }
+      // fallback local
+      users[e]= { password: p, profile: { fullName, iin, phone, city } };
+      saveUsers(users);
+      localStorage.setItem('volunteer_current', e);
+      showPanel(e);
+    })();
   });
 
   loginBtn.addEventListener('click', ()=>{
     const e=emailIn.value.trim(); const p=passIn.value;
-    const users=getUsers();
-    if(users[e] && users[e].password===p){
-      localStorage.setItem('volunteer_current', e);
-      showPanel(e);
-    } else alert('Неверный логин или пароль');
+    (async ()=>{
+      // Try Supabase sign in if available
+      if(window._supabase_helper && window._supabase_helper.signinVolunteer){
+        const res = await window._supabase_helper.signinVolunteer(e, p);
+        if(res && res.ok){
+          localStorage.setItem('volunteer_current', e);
+          showPanel(e);
+          return;
+        } else {
+          console.warn('Supabase signin failed, fallback to localStorage', res);
+        }
+      }
+      const users=getUsers();
+      if(users[e] && users[e].password===p){
+        localStorage.setItem('volunteer_current', e);
+        showPanel(e);
+      } else alert('Неверный логин или пароль');
+    })();
   });
 
   document.getElementById('logout') && document.getElementById('logout').addEventListener('click', ()=>{
@@ -121,7 +149,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const tbody=document.querySelector('#apps-table tbody');
     if(!tbody) return;
     const filter=document.getElementById('filter-status').value;
-    const apps=loadApps().filter(a=> filter==='all' ? true : a.status===filter);
+    // If Supabase present, try to fetch requests list and use it (async caveat: this is still sync render)
+    const appsLocal = loadApps();
+    const apps = appsLocal.filter(a=> filter==='all' ? true : a.status===filter);
     tbody.innerHTML='';
     apps.forEach((a, idx)=>{
       const tr=document.createElement('tr');
