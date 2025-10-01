@@ -21,26 +21,58 @@ document.addEventListener('DOMContentLoaded', ()=>{
       // initialize map for volunteers (only once)
       try {
         if(window.volunteerMapAPI && !window._volunteer_map_inited){
-          const map = window.volunteerMapAPI.init('volunteer-map');
+          // initialize once and keep instance
+          try{
+            window._volunteer_map_instance = window.volunteerMapAPI.init('volunteer-map');
+          }catch(e){
+            console.warn('volunteer map init error', e);
+          }
           window._volunteer_map_inited = true;
         }
-        // render apps as markers on the map (use stored coords if available)
+        // render apps list in the table
         renderApps();
         // add markers for apps that have coords onto the map via volunteerMapAPI
         if(window._volunteer_map_inited && window.volunteerMapAPI){
           const apps = loadApps();
-          // ensure map markers are refreshed
-          // first refresh organization markers
+          // ensure organization markers are refreshed
           window.volunteerMapAPI.refreshMarkers && window.volunteerMapAPI.refreshMarkers();
-          // then add app markers
+          // then add app markers (only those with coords)
+          const mapInst = window._volunteer_map_instance;
+          // clear previously added app markers kept on map (we'll attach them to an array)
+          if(!window._volunteer_app_markers) window._volunteer_app_markers = [];
+          window._volunteer_app_markers.forEach(m => mapInst.removeLayer(m));
+          window._volunteer_app_markers = [];
           apps.forEach((a, idx)=>{
             const coords = a.coords;
             if(coords && Array.isArray(coords) && coords.length===2){
-              const m = L.marker(coords).addTo(window.volunteerMapAPI.init('volunteer-map'));
-              m.bindPopup(`<strong>${escapeHtml(a.name)}</strong><br/>${escapeHtml(a.desc)}<br/><em>${escapeHtml(a.address||'')}</em><br/><small>Статус: ${escapeHtml(a.status)}</small>`);
+              const m = L.marker(coords).addTo(mapInst);
+              const created = a.created ? new Date(a.created).toLocaleString() : '';
+              const popup = `<strong>${escapeHtml(a.name)}</strong><br/>${escapeHtml(a.desc)}<br/><em>${escapeHtml(a.address||'')}</em><br/>Контакт: <a href=\"mailto:${escapeHtml(a.contact)}\">${escapeHtml(a.contact)}</a><br/><small>Статус: ${escapeHtml(a.status)} • Добавлено: ${escapeHtml(created)}</small>`;
+              m.bindPopup(popup);
+              window._volunteer_app_markers.push(m);
             }
           });
         }
+        // if there are no apps yet, seed a couple of example requests for demo
+        try{
+          const existing = loadApps();
+          if(!existing || existing.length===0){
+            const demo = [
+              { name: 'Семья Ивановых', city: 'Астана', address: 'ул. Труда, 12', contact: '+7 700 000 0000', desc: 'Нужна тёплая одежда и продукты для семьи из 4 человек', created: Date.now()-1000*60*60*24, status: 'new', coords: [51.140,71.430] },
+              { name: 'Пожилой Марат', city: 'Астана', address: 'ул. Лесная, 5', contact: '+7 701 111 1111', desc: 'Нужны лекарства и продукты', created: Date.now()-1000*60*60*5, status: 'new', coords: [51.170,71.460] }
+            ];
+            saveApps(demo);
+            renderApps();
+            // add demo markers if map ready
+            if(window._volunteer_map_inited && window._volunteer_map_instance){
+              demo.forEach(d => {
+                const m = L.marker(d.coords).addTo(window._volunteer_map_instance);
+                m.bindPopup(`<strong>${escapeHtml(d.name)}</strong><br/>${escapeHtml(d.desc)}<br/><em>${escapeHtml(d.address||'')}</em><br/>Контакт: ${escapeHtml(d.contact)}<br/><small>Статус: ${escapeHtml(d.status)}</small>`);
+                window._volunteer_app_markers.push(m);
+              });
+            }
+          }
+        }catch(e){console.warn('seeding demo apps failed', e)}
       } catch(e){ console.warn('Map init failed', e); }
   }
 
