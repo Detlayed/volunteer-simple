@@ -22,10 +22,12 @@
       <h2>Форма подачи заявки</h2>
       <label>Имя/Организация</label>
       <input id="app-name" placeholder="ФИО или название организации" />
-      <label>Город</label>
-      <input id="app-city" placeholder="Город (например, Астана)" />
-      <label>Контакт (телефон или email)</label>
-      <input id="app-contact" placeholder="Телефон или email" />
+  <label>Город</label>
+  <input id="app-city" placeholder="Город (например, Астана)" />
+  <label>Адрес</label>
+  <input id="app-address" placeholder="Улица, дом, квартира (по желанию)" />
+  <label>Контакт (телефон или email)</label>
+  <input id="app-contact" placeholder="Телефон или email" />
       <label>Краткое описание нужд</label>
       <textarea id="app-desc" rows="4"></textarea>
       <button id="submit-app" class="kaspi-btn">Отправить заявку</button>
@@ -34,16 +36,17 @@
   </main>
   <script>
     document.getElementById('submit-app').addEventListener('click', ()=>{
-      const name=document.getElementById('app-name').value.trim();
-      const city=document.getElementById('app-city').value.trim();
-      const contact=document.getElementById('app-contact').value.trim();
-      const desc=document.getElementById('app-desc').value.trim();
-      if(!name||!contact||!desc){document.getElementById('app-result').textContent='Заполните имя, контакт и описание.';return}
-      const apps=JSON.parse(localStorage.getItem('volunteer_apps')||'[]');
-      apps.push({name,city,contact,desc,created:Date.now(),status:'new'});
+  const name=document.getElementById('app-name').value.trim();
+  const city=document.getElementById('app-city').value.trim();
+  const address=document.getElementById('app-address').value.trim();
+  const contact=document.getElementById('app-contact').value.trim();
+  const desc=document.getElementById('app-desc').value.trim();
+  if(!name||!contact||!desc){document.getElementById('app-result').textContent='Заполните имя, контакт и описание.';return}
+  const apps=JSON.parse(localStorage.getItem('volunteer_apps')||'[]');
+  apps.push({name,city,address,contact,desc,created:Date.now(),status:'new'});
       localStorage.setItem('volunteer_apps',JSON.stringify(apps));
-      document.getElementById('app-result').textContent='Заявка принята — волонтёры свяжутся с вами.';
-      document.getElementById('app-name').value='';document.getElementById('app-city').value='';document.getElementById('app-contact').value='';document.getElementById('app-desc').value='';
+  document.getElementById('app-result').textContent='Заявка принята — волонтёры свяжутся с вами.';
+  document.getElementById('app-name').value='';document.getElementById('app-city').value='';document.getElementById('app-address').value='';document.getElementById('app-contact').value='';document.getElementById('app-desc').value='';
     });
   </script>
 </body>
