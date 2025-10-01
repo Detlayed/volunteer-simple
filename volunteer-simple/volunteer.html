@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Волонтёры — Вход</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .auth-box{max-width:420px;margin:40px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.06)}
+    .auth-box input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb}
+    .auth-actions{display:flex;gap:8px}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand"><h1 class="title">Волонтёры</h1></div>
+      <nav class="nav"><a href="index.html" class="nav-btn">Главная</a></nav>
+    </div>
+  </header>
+  <main>
+    <div class="auth-box" id="auth-box">
+      <h2 id="auth-title">Вход для волонтёров</h2>
+      <input id="email" placeholder="Электронная почта" />
+      <input id="password" type="password" placeholder="Пароль" />
+      <div class="auth-actions">
+        <button id="login" class="kaspi-btn">Войти</button>
+        <button id="register" class="nav-btn">Регистрация</button>
+      </div>
+      <div style="margin-top:10px;font-size:0.9rem;color:#666">Прототип: данные хранятся в браузере (localStorage). Не используйте реальные пароли.</div>
+    </div>
+
+    <div class="auth-box" id="volunteer-panel" style="display:none;">
+      <h2>Панель волонтёра</h2>
+      <p>Добро пожаловать, <span id="volunteer-email"></span></p>
+      <button id="logout" class="nav-btn">Выйти</button>
+      <h3>Действия</h3>
+      <ul>
+        <li><a href="request.html">Посмотреть/обработать заявки</a></li>
+        <li><a href="index.html">Вернуться на карту</a></li>
+      </ul>
+    </div>
+  </main>
+  <script src="volunteer.js"></script>
+</body>
+</html>

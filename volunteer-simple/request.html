@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Подать заявку на помощь</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .form-box{max-width:720px;margin:30px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.06)}
+    .form-box input,.form-box textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand"><h1 class="title">Заявка на помощь</h1></div>
+      <nav class="nav"><a href="index.html" class="nav-btn">Главная</a></nav>
+    </div>
+  </header>
+  <main>
+    <div class="form-box">
+      <h2>Форма подачи заявки</h2>
+      <label>Имя/Организация</label>
+      <input id="app-name" placeholder="ФИО или название организации" />
+      <label>Город</label>
+      <input id="app-city" placeholder="Город (например, Астана)" />
+      <label>Контакт (телефон или email)</label>
+      <input id="app-contact" placeholder="Телефон или email" />
+      <label>Краткое описание нужд</label>
+      <textarea id="app-desc" rows="4"></textarea>
+      <button id="submit-app" class="kaspi-btn">Отправить заявку</button>
+      <div id="app-result" style="margin-top:12px;color:#066"></div>
+    </div>
+  </main>
+  <script>
+    document.getElementById('submit-app').addEventListener('click', ()=>{
+      const name=document.getElementById('app-name').value.trim();
+      const city=document.getElementById('app-city').value.trim();
+      const contact=document.getElementById('app-contact').value.trim();
+      const desc=document.getElementById('app-desc').value.trim();
+      if(!name||!contact||!desc){document.getElementById('app-result').textContent='Заполните имя, контакт и описание.';return}
+      const apps=JSON.parse(localStorage.getItem('volunteer_apps')||'[]');
+      apps.push({name,city,contact,desc,created:Date.now(),status:'new'});
+      localStorage.setItem('volunteer_apps',JSON.stringify(apps));
+      document.getElementById('app-result').textContent='Заявка принята — волонтёры свяжутся с вами.';
+      document.getElementById('app-name').value='';document.getElementById('app-city').value='';document.getElementById('app-contact').value='';document.getElementById('app-desc').value='';
+    });
+  </script>
+</body>
+</html>
