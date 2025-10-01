@@ -18,30 +18,30 @@ document.addEventListener('DOMContentLoaded', ()=>{
     authBox.style.display='none';
     panel.style.display='block';
     emailSpan.textContent=email;
-    // initialize map for volunteers
-    try {
-      if(window.volunteerMapAPI && !window._volunteer_map_inited){
-        window.volunteerMapAPI.init('volunteer-map');
-        window._volunteer_map_inited = true;
-      }
-      // render apps as markers on the map (demo placement if no coords)
-      const apps = loadApps();
-      const mapObj = window.volunteerMapAPI && window.volunteerMapAPI.init && window.volunteerMapAPI;
-      if(window._volunteer_map_inited && mapObj){
-        // add app markers
-        const placesMap = window.volunteerMapAPI.getPlaces() || [];
-        // For demo: add sample markers for apps near center if they lack coords
-        apps.forEach((a, idx)=>{
-          // use app.coords if present, else random nearby
-          let coords = a.coords;
-          if(!coords){
-            coords = [51.1694 + (idx+1)*0.01, 71.4491 + (idx+1)*0.01];
-          }
-          const m = L.marker(coords).addTo(window.volunteerMapAPI.init('volunteer-map'));
-          m.bindPopup(`<strong>${a.name}</strong><br/>${a.desc}<br/><em>${a.address||''}</em><br/><small>Статус: ${a.status}</small>`);
-        });
-      }
-    } catch(e){ console.warn('Map init failed', e); }
+      // initialize map for volunteers (only once)
+      try {
+        if(window.volunteerMapAPI && !window._volunteer_map_inited){
+          const map = window.volunteerMapAPI.init('volunteer-map');
+          window._volunteer_map_inited = true;
+        }
+        // render apps as markers on the map (use stored coords if available)
+        renderApps();
+        // add markers for apps that have coords onto the map via volunteerMapAPI
+        if(window._volunteer_map_inited && window.volunteerMapAPI){
+          const apps = loadApps();
+          // ensure map markers are refreshed
+          // first refresh organization markers
+          window.volunteerMapAPI.refreshMarkers && window.volunteerMapAPI.refreshMarkers();
+          // then add app markers
+          apps.forEach((a, idx)=>{
+            const coords = a.coords;
+            if(coords && Array.isArray(coords) && coords.length===2){
+              const m = L.marker(coords).addTo(window.volunteerMapAPI.init('volunteer-map'));
+              m.bindPopup(`<strong>${escapeHtml(a.name)}</strong><br/>${escapeHtml(a.desc)}<br/><em>${escapeHtml(a.address||'')}</em><br/><small>Статус: ${escapeHtml(a.status)}</small>`);
+            }
+          });
+        }
+      } catch(e){ console.warn('Map init failed', e); }
   }
 
   // Check logged in
@@ -53,7 +53,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(!e||!p){ alert('Введите email и пароль'); return }
     const users=getUsers();
     if(users[e]){ alert('Пользователь уже существует'); return }
-    users[e]= { password: p };
+    // collect profile fields if provided
+    const fullName = (document.getElementById('full-name') && document.getElementById('full-name').value.trim()) || '';
+    const iin = (document.getElementById('iin') && document.getElementById('iin').value.trim()) || '';
+    const phone = (document.getElementById('vol-phone') && document.getElementById('vol-phone').value.trim()) || '';
+    const city = (document.getElementById('vol-city') && document.getElementById('vol-city').value.trim()) || '';
+    users[e]= { password: p, profile: { fullName, iin, phone, city } };
     saveUsers(users);
     localStorage.setItem('volunteer_current', e);
     showPanel(e);
@@ -125,5 +130,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // initial render if logged
   if(localStorage.getItem('volunteer_current')){
     renderApps();
+    // show brief profile in panel
+    try{
+      const cur = localStorage.getItem('volunteer_current');
+      const users = getUsers();
+      const p = users[cur] && users[cur].profile;
+      if(p){
+        const el = document.getElementById('volunteer-profile');
+        if(el) el.textContent = `Профиль: ${p.fullName||''} ${p.phone?('• '+p.phone):''} ${p.city?('• '+p.city):''}`;
+      }
+    }catch(e){}
   }
 });

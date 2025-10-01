@@ -24,6 +24,12 @@
       <h2 id="auth-title">Вход для волонтёров</h2>
       <input id="email" placeholder="Электронная почта" />
       <input id="password" type="password" placeholder="Пароль" />
+      <hr />
+      <label>Регистрация — дополнительные данные (если регистрируетесь)</label>
+      <input id="full-name" placeholder="ФИО" />
+      <input id="iin" placeholder="ИИН (только для записи в профиль)" />
+      <input id="vol-phone" placeholder="Телефон для контакта" />
+      <input id="vol-city" placeholder="Город" />
       <div class="auth-actions">
         <button id="login" class="kaspi-btn">Войти</button>
         <button id="register" class="nav-btn">Регистрация</button>
@@ -34,6 +40,7 @@
     <div class="auth-box" id="volunteer-panel" style="display:none;">
       <h2>Панель волонтёра</h2>
       <p>Добро пожаловать, <span id="volunteer-email"></span></p>
+      <div id="volunteer-profile" style="font-size:0.95rem;color:#333;margin-bottom:8px"></div>
       <button id="logout" class="nav-btn">Выйти</button>
       <h3>Действия</h3>
       <div>

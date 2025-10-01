@@ -35,7 +35,23 @@
     </div>
   </main>
   <script>
-    document.getElementById('submit-app').addEventListener('click', ()=>{
+    // Try to geocode address using Nominatim (OpenStreetMap) and save coords with the application
+    async function geocodeAddress(q){
+      if(!q) return null;
+      try{
+        const url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q + ', Казахстан');
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if(!res.ok) return null;
+        const data = await res.json();
+        if(data && data.length>0){
+          const loc = data[0];
+          return [parseFloat(loc.lat), parseFloat(loc.lon)];
+        }
+      }catch(e){ console.warn('Geocode failed', e); }
+      return null;
+    }
+
+    document.getElementById('submit-app').addEventListener('click', async ()=>{
   const name=document.getElementById('app-name').value.trim();
   const city=document.getElementById('app-city').value.trim();
   const address=document.getElementById('app-address').value.trim();
@@ -43,9 +59,15 @@
   const desc=document.getElementById('app-desc').value.trim();
   if(!name||!contact||!desc){document.getElementById('app-result').textContent='Заполните имя, контакт и описание.';return}
   const apps=JSON.parse(localStorage.getItem('volunteer_apps')||'[]');
-  apps.push({name,city,address,contact,desc,created:Date.now(),status:'new'});
+  const combined = [name, city, address, contact].filter(Boolean).join(', ');
+  document.getElementById('app-result').textContent = 'Сохраняем... пытаемся определить координаты по адресу (опционально)';
+  let coords = null;
+  if(address || city){
+    coords = await geocodeAddress((address?address+', ':'') + (city||''));
+  }
+  apps.push({name,city,address,contact,desc,created:Date.now(),status:'new', coords: coords});
       localStorage.setItem('volunteer_apps',JSON.stringify(apps));
-  document.getElementById('app-result').textContent='Заявка принята — волонтёры свяжутся с вами.';
+  document.getElementById('app-result').textContent='Заявка принята — волонтёры свяжутся с вами.' + (coords? ' Координаты определены.':'');
   document.getElementById('app-name').value='';document.getElementById('app-city').value='';document.getElementById('app-address').value='';document.getElementById('app-contact').value='';document.getElementById('app-desc').value='';
     });
   </script>
